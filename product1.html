@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Page</title>
+    <link rel="stylesheet" href="product.css">
+    <script>
+        function addToCart() {
+            const message = document.getElementById('cart-message');
+            message.style.display = 'block';
+            setTimeout(() => {
+                message.style.display = 'none';
+            }, 2000);
+        }
+    </script>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <a href="index.html">E-Shop</a>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="homepage.html">Home</a></li>
+                <li><a href="shop.html">Shop</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+                <li><a href="cart.html">Cart</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="product-container">
+        <img src="smartwatch1.webp" alt="Product Image">
+        <div class="product-details">
+            <h1>Product Name</h1>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed sit amet lacus enim.</p>
+            <div class="price">$29.99</div>
+            <button onclick="addToCart()">Add to Cart</button>
+            <div id="cart-message" class="cart-message">Product added to cart!</div>
+        </div>
+    </div>
+</body>
+</html>
