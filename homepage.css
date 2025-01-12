@@ -26,50 +26,7 @@ body {
     background: #4cae4c;
 }
 
-/* Header */
-.header {
-    background: #f4f4f4;
-    border-bottom: 1px solid #ddd;
-    padding: 20px 0;
-}
 
-.header .logo a {
-    font-size: 24px;
-    font-weight: bold;
-    color: #333;
-    text-decoration: none;
-}
-
-.navbar ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-}
-
-.navbar ul li {
-    margin: 0 10px;
-}
-
-.navbar ul li a {
-    text-decoration: none;
-    color: #333;
-    padding: 5px 10px;
-    border-radius: 3px;
-    transition: background 0.3s;
-}
-
-.navbar ul li a:hover {
-    background: #ddd;
-}
-
-.cart a {
-    color: #333;
-    text-decoration: none;
-    font-weight: bold;
-}
-
-/* Hero Section */
 .hero {
     background: #333 url('hero-bg.jpg') no-repeat center center/cover;
     color: #fff;
@@ -87,7 +44,6 @@ body {
     margin-bottom: 30px;
 }
 
-/* Featured Products Section */
 .featured-products {
     padding: 50px 0;
     background: #f9f9f9;
@@ -129,7 +85,6 @@ body {
     font-weight: bold;
 }
 
-/* Categories Section */
 .categories {
     padding: 50px 0;
 }
@@ -160,65 +115,4 @@ body {
 .category-card h3 {
     padding: 10px;
     background: #f4f4f4;
-}
-
-/* Newsletter Section */
-.newsletter {
-    background: #333;
-    color: #fff;
-    padding: 50px 0;
-    text-align: center;
-}
-
-.newsletter h2 {
-    margin-bottom: 10px;
-}
-
-.newsletter p {
-    margin-bottom: 20px;
-}
-
-.newsletter form {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-}
-
-.newsletter input {
-    padding: 10px;
-    width: 300px;
-    border: none;
-    border-radius: 5px;
-}
-
-.newsletter button {
-    background: #5cb85c;
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background 0.3s;
-}
-
-.newsletter button:hover {
-    background: #4cae4c;
-}
-
-/* Footer */
-.footer {
-    background: #f4f4f4;
-    padding: 20px 0;
-    text-align: center;
-}
-
-.footer .footer-links a {
-    margin: 0 10px;
-    text-decoration: none;
-    color: #333;
-}
-
-.footer p {
-    margin-top: 10px;
-    font-size: 14px;
 }

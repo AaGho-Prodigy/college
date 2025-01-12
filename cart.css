@@ -1,0 +1,30 @@
+.cartTab{
+    width:400px;
+    background-color: #353432;
+    color: #eee;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    display:grid;
+    grid-template-rows: 70px 1fr 70px;
+    
+}
+
+.cartTab h1{
+    padding: 20px;
+    margin: 0;
+    font-weight: 300;
+}
+
+.cartTab .cartbtn{
+display: grid;
+grid-template-columns: repeat(2, 1fr);
+}
+
+.cartTab .cartbtn button{
+    background-color: #E8BC0E;
+    border: none;
+    font-weight: 500;
+    cursor: pointer;
+}

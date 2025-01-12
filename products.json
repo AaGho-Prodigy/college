@@ -1,0 +1,19 @@
+/*[
+    {
+      "product_name": "Wireless Headphones",
+      "price": 99.99,
+      "product_image": "https://example.com/images/wireless_headphones.jpg"
+    },
+    {
+      "product_name": "Smartwatch",
+      "price": 199.99,
+      "product_image": "https://example.com/images/smartwatch.jpg"
+    },
+    {
+      "product_name": "Portable Bluetooth Speaker",
+      "price": 49.99,
+      "product_image": "https://example.com/images/bluetooth_speaker.jpg"
+    }
+  ]
+  */
+  
