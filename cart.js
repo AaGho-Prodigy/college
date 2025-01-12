@@ -6,4 +6,5 @@
     closeButton.addEventListener('click', function() {
         // Hide the cartTab by setting display to 'none'
         cartTab.style.display = 'none';
+        
     });

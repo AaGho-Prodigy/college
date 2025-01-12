@@ -94,6 +94,7 @@
         </div>
 
        
+    </div>
 
     <div id="cart" class="cartTab">
         <h1> Shopping Cart</h1>
@@ -111,19 +112,79 @@
     
     </main>
     <script>
-    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+ const cart = JSON.parse(localStorage.getItem('cart')) || [];
 
-    const cartList = document.querySelector('.listCart');
+const cartList = document.querySelector('.listCart');
 
-    cart.forEach(item => {
-        const cartItem = document.createElement('div');
-        cartItem.classList.add('cart-item');
-        cartItem.innerHTML = `
-            <p><strong>Product:</strong> ${item.name}</p>
-            <p><strong>Price:</strong> $${item.price}</p>
-        `;
-        cartList.appendChild(cartItem);
+// Create a div to display the total sum of all products
+const totalPriceDiv = document.createElement('div');
+totalPriceDiv.classList.add('total-price-container');
+totalPriceDiv.innerHTML = `
+    <p><strong>Total Price:</strong> $<span id="total-price">0.00</span></p>
+`;
+cartList.appendChild(totalPriceDiv);
+
+const updateTotalPrice = () => {
+    // Calculate the total price by summing up the prices of all items
+    const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    document.getElementById('total-price').textContent = totalPrice.toFixed(2);
+};
+
+cart.forEach((item, index) => {
+    // Initialize quantity if not already set
+    item.quantity = item.quantity || 1;
+
+    const cartItem = document.createElement('div');
+    cartItem.classList.add('cart-item');
+    cartItem.innerHTML = `
+        <p><strong>Product:</strong> ${item.name}</p>
+        <p><strong>Price:</strong> $<span class="total-price">${(item.price * item.quantity).toFixed(2)}</span></p>
+        <p><strong>Quantity:</strong> <span class="quantity">${item.quantity}</span></p>
+    `;
+
+    // Create Remove button
+    const removeButton = document.createElement('button');
+    removeButton.textContent = 'Remove';
+    removeButton.classList.add('remove-btn');
+
+    // Attach event listener to the remove button
+    removeButton.addEventListener('click', () => {
+        cart.splice(index, 1); // Remove item from cart array
+        localStorage.setItem('cart', JSON.stringify(cart)); // Update localStorage
+        cartItem.remove(); // Remove item from DOM
+        updateTotalPrice(); // Update total price when item is removed
     });
+
+    // Create Add More button
+    const addButton = document.createElement('button');
+    addButton.textContent = 'Add More';
+    addButton.classList.add('add-btn');
+
+    // Attach event listener to the add button
+    addButton.addEventListener('click', () => {
+        item.quantity += 1; // Increase quantity
+        const totalPrice = item.price * item.quantity; // Calculate new total price
+        localStorage.setItem('cart', JSON.stringify(cart)); // Update localStorage
+
+        // Update quantity and price in the DOM
+        cartItem.querySelector('.quantity').textContent = item.quantity;
+        cartItem.querySelector('.total-price').textContent = totalPrice.toFixed(2);
+
+        updateTotalPrice(); // Update the total price when quantity increases
+    });
+
+    // Append buttons to the cart item
+    cartItem.appendChild(removeButton);
+    cartItem.appendChild(addButton);
+
+    // Append the cart item to the cart list
+    cartList.appendChild(cartItem);
+});
+
+// Initialize the total price display
+updateTotalPrice();
+
+
 </script>
     <script src="cart.js"></script>
     <script src="main.js"></script>
