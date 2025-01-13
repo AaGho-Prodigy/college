@@ -1,7 +1,7 @@
 <header class="header">
         <div class="container" style="display: flex; justify-content: space-around;">
             <div class="logo">
-                <a href="index.php">Your Store Name</a>
+                <a href="index.php">E-Pasal</a>
             </div>
             <div><nav class="navbar">
                 <ul>

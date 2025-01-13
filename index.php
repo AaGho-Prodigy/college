@@ -15,7 +15,7 @@
         <div class="container">
             <h1>Find Your Product Here!</h1>
             <p>We provide you with the most affordable electronic goods on the market.</p>
-            <a href="shop.html" class="btn">Shop Now</a>
+            <a href="shop.php" class="btn">Shop Now</a>
         </div>
     </section>
 

@@ -19,7 +19,7 @@
         <h1>Our Products</h1>
         <div class="product-grid">
             <div class="product-card">
-                <img src="product1.webp" alt="Product 1">
+                <img src="smartwatch1.webp" alt="Product 1">
                 <h3>Product 1</h3>
                 <p>High-quality electronic gadget with advanced features.</p>
                 <div class="price">$29.99</div>
@@ -27,7 +27,7 @@
             </div>
 
             <div class="product-card">
-                <img src="product2.webp" alt="Product 2">
+                <img src="smartwatch2.webp" alt="Product 2">
                 <h3>Product 2</h3>
                 <p>Reliable and affordable for everyday use.</p>
                 <div class="price">$39.99</div>
@@ -35,7 +35,7 @@
             </div>
 
             <div class="product-card">
-                <img src="product3.webp" alt="Product 3">
+                <img src="smartwatch3.webp" alt="Product 3">
                 <h3>Product 3</h3>
                 <p>Stylish and compact design for modern living.</p>
                 <div class="price">$49.99</div>
@@ -43,7 +43,7 @@
             </div>
 
             <div class="product-card">
-                <img src="product4.webp" alt="Product 4">
+                <img src="playstation.webp" alt="Product 4">
                 <h3>Product 4</h3>
                 <p>Top-notch quality for the tech-savvy user.</p>
                 <div class="price">$59.99</div>
@@ -51,7 +51,7 @@
             </div>
 
             <div class="product-card">
-                <img src="product5.webp" alt="Product 5">
+                <img src="smartwatch1.webp" alt="Product 5">
                 <h3>Product 5</h3>
                 <p>Affordable and durable for long-term use.</p>
                 <div class="price">$19.99</div>
@@ -59,7 +59,7 @@
             </div>
 
             <div class="product-card">
-                <img src="product5.webp" alt="Product 5">
+                <img src="smartwatch2.webp" alt="Product 5">
                 <h3>Product 6</h3>
                 <p>Affordable and durable for long-term use.</p>
                 <div class="price">$19.99</div>
@@ -67,7 +67,7 @@
             </div>
     
             <div class="product-card">
-                <img src="product5.webp" alt="Product 5">
+                <img src="playstation.webp" alt="Product 5">
                 <h3>Product 7</h3>
                 <p>Affordable and durable for long-term use.</p>
                 <div class="price">$19.99</div>
@@ -75,7 +75,7 @@
             </div>
     
             <div class="product-card">
-                <img src="product5.webp" alt="Product 5">
+                <img src="smartwatch3.webp" alt="Product 5">
                 <h3>Product 8</h3>
                 <p>Affordable and durable for long-term use.</p>
                 <div class="price">$19.99</div>
@@ -83,7 +83,7 @@
             </div>
     
             <div class="product-card">
-                <img src="product5.webp" alt="Product 5">
+                <img src="smartwatch2.webp" alt="Product 5">
                 <h3>Product 9</h3>
                 <p>Affordable and durable for long-term use.</p>
                 <div class="price">$19.99</div>
@@ -116,7 +116,6 @@
 
 const cartList = document.querySelector('.listCart');
 
-// Create a div to display the total sum of all products
 const totalPriceDiv = document.createElement('div');
 totalPriceDiv.classList.add('total-price-container');
 totalPriceDiv.innerHTML = `
@@ -125,13 +124,11 @@ totalPriceDiv.innerHTML = `
 cartList.appendChild(totalPriceDiv);
 
 const updateTotalPrice = () => {
-    // Calculate the total price by summing up the prices of all items
     const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     document.getElementById('total-price').textContent = totalPrice.toFixed(2);
 };
 
 cart.forEach((item, index) => {
-    // Initialize quantity if not already set
     item.quantity = item.quantity || 1;
 
     const cartItem = document.createElement('div');
@@ -142,17 +139,15 @@ cart.forEach((item, index) => {
         <p><strong>Quantity:</strong> <span class="quantity">${item.quantity}</span></p>
     `;
 
-    // Create Remove button
     const removeButton = document.createElement('button');
     removeButton.textContent = 'Remove';
     removeButton.classList.add('remove-btn');
 
-    // Attach event listener to the remove button
     removeButton.addEventListener('click', () => {
-        cart.splice(index, 1); // Remove item from cart array
-        localStorage.setItem('cart', JSON.stringify(cart)); // Update localStorage
-        cartItem.remove(); // Remove item from DOM
-        updateTotalPrice(); // Update total price when item is removed
+        cart.splice(index, 1); 
+        localStorage.setItem('cart', JSON.stringify(cart)); 
+        cartItem.remove(); 
+        updateTotalPrice(); 
     });
 
     // Create Add More button
@@ -160,28 +155,23 @@ cart.forEach((item, index) => {
     addButton.textContent = 'Add More';
     addButton.classList.add('add-btn');
 
-    // Attach event listener to the add button
     addButton.addEventListener('click', () => {
-        item.quantity += 1; // Increase quantity
-        const totalPrice = item.price * item.quantity; // Calculate new total price
-        localStorage.setItem('cart', JSON.stringify(cart)); // Update localStorage
+        item.quantity += 1; 
+        const totalPrice = item.price * item.quantity; 
+        localStorage.setItem('cart', JSON.stringify(cart)); 
 
-        // Update quantity and price in the DOM
         cartItem.querySelector('.quantity').textContent = item.quantity;
         cartItem.querySelector('.total-price').textContent = totalPrice.toFixed(2);
 
-        updateTotalPrice(); // Update the total price when quantity increases
+        updateTotalPrice(); 
     });
 
-    // Append buttons to the cart item
     cartItem.appendChild(removeButton);
     cartItem.appendChild(addButton);
 
-    // Append the cart item to the cart list
     cartList.appendChild(cartItem);
 });
 
-// Initialize the total price display
 updateTotalPrice();
 
 
