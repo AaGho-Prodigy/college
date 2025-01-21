@@ -3,181 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shop</title>
-    <link rel="stylesheet" href="shop.css">
+    <title>Your Store</title>
+    <link rel="stylesheet" href="homepage.css">
     <link rel="stylesheet" href="header.css">
-    <link rel="stylesheet" href="cart.css">
-    <link rel="stylesheet" href="footer.css">
     <style>
-       
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 20px;
+        }
+        .product-card {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 300px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+        .product-card:hover {
+            transform: scale(1.05);
+        }
+        .product-card img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+        .product-card h3 {
+            margin: 10px 0;
+            font-size: 18px;
+        }
+        .product-card p {
+            font-size: 14px;
+            color: #555;
+            margin: 10px 0;
+        }
+        .product-card .price {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+        }
     </style>
 </head>
 <body>
-<?php include('header.php');?>
+<?php include 'header.php';?>
 
-    <main class="shop-container">
-        <h1>Our Products</h1>
-        <div class="product-grid">
-            <div class="product-card">
-                <img src="smartwatch1.webp" alt="Product 1">
-                <h3>Product 1</h3>
-                <p>High-quality electronic gadget with advanced features.</p>
-                <div class="price">$29.99</div>
-                <button class="btn add-to-cart" data-name="Product 1" data-price="29.99">Add to Cart</button>
-            </div>
+<?php
+// Database connection
+$conn = mysqli_connect("localhost", "root", "", "registration");
 
-            <div class="product-card">
-                <img src="smartwatch2.webp" alt="Product 2">
-                <h3>Product 2</h3>
-                <p>Reliable and affordable for everyday use.</p>
-                <div class="price">$39.99</div>
-                <button class="btn add-to-cart" data-name="Product 2" data-price="39.99">Add to Cart</button>
-            </div>
+// Check connection
+if (!$conn) {
+    die("Connection failed: " . mysqli_connect_error());
+}
 
-            <div class="product-card">
-                <img src="smartwatch3.webp" alt="Product 3">
-                <h3>Product 3</h3>
-                <p>Stylish and compact design for modern living.</p>
-                <div class="price">$49.99</div>
-                <button class="btn add-to-cart" data-name="Product 3" data-price="49.99">Add to Cart</button>
-            </div>
+// Fetch all products from the database
+$sql = "SELECT id, title, description, price, image_url FROM products";
+$result = $conn->query($sql);
+?>
 
-            <div class="product-card">
-                <img src="playstation.webp" alt="Product 4">
-                <h3>Product 4</h3>
-                <p>Top-notch quality for the tech-savvy user.</p>
-                <div class="price">$59.99</div>
-                <button class="btn add-to-cart" data-name="Product 4" data-price="59.99">Add to Cart</button>
-            </div>
 
-            <div class="product-card">
-                <img src="smartwatch1.webp" alt="Product 5">
-                <h3>Product 5</h3>
-                <p>Affordable and durable for long-term use.</p>
-                <div class="price">$19.99</div>
-                <button class="btn add-to-cart" data-name="Product 5" data-price="19.99">Add to Cart</button>
-            </div>
+</head>
+<body>
+    <div class="container">
+        <?php
+        // Check if the query returned any products
+        if ($result->num_rows > 0) {
+            // Loop through each product and create a product card
+            while ($row = $result->fetch_assoc()) {
+                echo '<div class="product-card">';
+                echo '<img src="' . htmlspecialchars($row["image_url"]) . '" alt="' . htmlspecialchars($row["title"]) . '">';
+                echo '<h3>' . htmlspecialchars($row["title"]) . '</h3>';
+                echo '<p>' . htmlspecialchars($row["description"]) . '</p>';
+                echo '<div class="price">$' . number_format($row["price"], 2) . '</div>';
+                echo '</div>';
+            }
+        } else {
+            echo '<p>No products available.</p>';
+        }
 
-            <div class="product-card">
-                <img src="smartwatch2.webp" alt="Product 5">
-                <h3>Product 6</h3>
-                <p>Affordable and durable for long-term use.</p>
-                <div class="price">$19.99</div>
-                <button class="btn add-to-cart" data-name="Product 5" data-price="19.99">Add to Cart</button>
-            </div>
-    
-            <div class="product-card">
-                <img src="playstation.webp" alt="Product 5">
-                <h3>Product 7</h3>
-                <p>Affordable and durable for long-term use.</p>
-                <div class="price">$19.99</div>
-                <button class="btn add-to-cart" data-name="Product 5" data-price="19.99">Add to Cart</button>
-            </div>
-    
-            <div class="product-card">
-                <img src="smartwatch3.webp" alt="Product 5">
-                <h3>Product 8</h3>
-                <p>Affordable and durable for long-term use.</p>
-                <div class="price">$19.99</div>
-                <button class="btn add-to-cart" data-name="Product 5" data-price="19.99">Add to Cart</button>
-            </div>
-    
-            <div class="product-card">
-                <img src="smartwatch2.webp" alt="Product 5">
-                <h3>Product 9</h3>
-                <p>Affordable and durable for long-term use.</p>
-                <div class="price">$19.99</div>
-                <button class="btn add-to-cart" data-name="Product 5" data-price="19.99">Add to Cart</button>
-            </div>
-    
-           
-        </div>
-
-       
+        // Close the database connection
+        $conn->close();
+        ?>
     </div>
-
-    <div id="cart" class="cartTab">
-        <h1> Shopping Cart</h1>
-        <div class="listCart">
-   
-    </div>
-    <div class="cartbtn">
-        <button class="close">Close</button>
-        <button class="checkOut">Check Out</button>
-    </div>
-</div>
-
-<?php include('footer.php');?>
-
-    
-    </main>
-    <script>
- const cart = JSON.parse(localStorage.getItem('cart')) || [];
-
-const cartList = document.querySelector('.listCart');
-
-const totalPriceDiv = document.createElement('div');
-totalPriceDiv.classList.add('total-price-container');
-totalPriceDiv.innerHTML = `
-    <p><strong>Total Price:</strong> $<span id="total-price">0.00</span></p>
-`;
-cartList.appendChild(totalPriceDiv);
-
-const updateTotalPrice = () => {
-    const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    document.getElementById('total-price').textContent = totalPrice.toFixed(2);
-};
-
-cart.forEach((item, index) => {
-    item.quantity = item.quantity || 1;
-
-    const cartItem = document.createElement('div');
-    cartItem.classList.add('cart-item');
-    cartItem.innerHTML = `
-        <p><strong>Product:</strong> ${item.name}</p>
-        <p><strong>Price:</strong> $<span class="total-price">${(item.price * item.quantity).toFixed(2)}</span></p>
-        <p><strong>Quantity:</strong> <span class="quantity">${item.quantity}</span></p>
-    `;
-
-    const removeButton = document.createElement('button');
-    removeButton.textContent = 'Remove';
-    removeButton.classList.add('remove-btn');
-
-    removeButton.addEventListener('click', () => {
-        cart.splice(index, 1); 
-        localStorage.setItem('cart', JSON.stringify(cart)); 
-        cartItem.remove(); 
-        updateTotalPrice(); 
-    });
-
-    // Create Add More button
-    const addButton = document.createElement('button');
-    addButton.textContent = 'Add More';
-    addButton.classList.add('add-btn');
-
-    addButton.addEventListener('click', () => {
-        item.quantity += 1; 
-        const totalPrice = item.price * item.quantity; 
-        localStorage.setItem('cart', JSON.stringify(cart)); 
-
-        cartItem.querySelector('.quantity').textContent = item.quantity;
-        cartItem.querySelector('.total-price').textContent = totalPrice.toFixed(2);
-
-        updateTotalPrice(); 
-    });
-
-    cartItem.appendChild(removeButton);
-    cartItem.appendChild(addButton);
-
-    cartList.appendChild(cartItem);
-});
-
-updateTotalPrice();
-
-
-</script>
-    <script src="cart.js"></script>
-    <script src="main.js"></script>
+    <?php include 'footer.php';?>
 
 </body>
 </html>

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <script src="addproduct.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        /* Tabs styling */
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            color: #333;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            background: #f9f9f9;
+            font-weight: bold;
+        }
+
+        .tab.active {
+            background: #fff;
+            border-top: 2px solid #007bff;
+            color: #007bff;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            padding: 20px;
+        }
+
+        /* Form styling */
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        input, textarea, button, select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button {
+            background: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        /* Table styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Admin Panel</h1>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <div class="tab active" data-target="#add-product">Add Product</div>
+            <div class="tab" data-target="#view-products">View Products</div>
+            <div class="tab" data-target="#view-users">View Users</div>
+        </div>
+
+        <!-- Tab Contents -->
+        <div class="tab-content active" id="add-product">
+            <h2>Add New Product</h2>
+            <form action="addproduct.php" method="POST">
+                <input type="text" name="title" id="title" name="title" placeholder="Product Title" required>
+                <textarea name="description" id="description" name="description" placeholder="Product Description" rows="4" required></textarea>
+                <input type="number" name="price" id="price" name="price" placeholder="Price" step="0.01" required>
+                <button type="submit">Submit</button>
+            </form>
+            
+        </div>
+        
+
+        <div class="tab-content" id="view-products">
+            <h2>Available Products</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Description</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                        <th>Image</th>
+                    </tr>
+                </thead>
+                <tbody id="product-list">
+                    <!-- Dynamic content -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="tab-content" id="view-users">
+            <h2>Total Registered Users</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                    </tr>
+                </thead>
+                <tbody id="user-list">
+                    <!-- Rows will be dynamically inserted here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Tab functionality
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Remove active class from all tabs and contents
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+
+                    // Add active class to the clicked tab and target content
+                    tab.classList.add('active');
+                    document.querySelector(tab.dataset.target).classList.add('active');
+                });
+            });
+
+          
+
+            // Fetch users from the server
+            function loadUsers() {
+                fetch('fetch_users.php') // Fetch data from the PHP script
+                    .then(response => response.json()) // Parse JSON response
+                    .then(users => {
+                        console.log(users); // Debugging: Check if users are returned
+                        const userList = document.getElementById('user-list');
+                        userList.innerHTML = ''; // Clear previous rows
+
+                        if (users.length > 0) {
+                            users.forEach(user => {
+                                const row = `
+                                    <tr>
+                                        <td>${user.id}</td>
+                                        <td>${user.username}</td>
+                                        <td>${user.email}</td>
+                                    </tr>
+                                `;
+                                userList.innerHTML += row;
+                            });
+                        } else {
+                            userList.innerHTML = '<tr><td colspan="3">No users found.</td></tr>';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading users:', error);
+                    });
+            }
+        });
+
+      
+    </script>
+</body>
+</html>

@@ -6,7 +6,13 @@
     <title>Product Page</title>
     <link rel="stylesheet" href="product.css">
     <script>
-       
+        function addToCart() {
+            const message = document.getElementById('cart-message');
+            message.style.display = 'block';
+            setTimeout(() => {
+                message.style.display = 'none';
+            }, 2000);
+        }
     </script>
 </head>
 <body>
