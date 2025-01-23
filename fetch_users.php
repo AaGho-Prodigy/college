@@ -5,10 +5,7 @@ $username = "root"; // Your database username
 $password = ""; // No password
 $database = "registration"; // Your database name
 
-// Enable CORS headers
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET");
-header("Access-Control-Allow-Headers: Content-Type");
+
 
 // Establish a connection
 $conn = new mysqli($host, $username, $password, $database);
