@@ -111,14 +111,14 @@
     </style>
 </head>
 <?php
+
 session_start();
 
 if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
-    // Redirect non-admin users to the homepage
     header("Location: index.php");
     exit();
-
-}?>
+}
+?>
 <body>
     <?php include 'header.php'; ?>
     <div class="container">
@@ -128,20 +128,24 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
             <div class="tab active" data-target="#add-product">Add Product</div>
             <div class="tab" data-target="#view-products">View Products</div>
             <div class="tab" data-target="#view-users">View Users</div>
+            <div class="tab" data-target="#view-orders">View Orders</div>
         </div>
 
         <div class="tab-content active" id="add-product">
-            <h2>Add New Product</h2>
-            <form action="addproduct.php" method="post" enctype="multipart/form-data">
-                <input type="text" name="title" placeholder="Title" required>
-                <textarea name="description" placeholder="Description" required></textarea>
-                <input type="number" name="price" placeholder="Price" required>
-                <input type="file" name="image" accept="image/*" required>
-                <button type="submit">Submit</button>
-            </form>
-        </div>
+    <h2>Add New Product</h2>
+    <form action="addproduct.php" method="post" enctype="multipart/form-data">
+        <input type="text" name="title" placeholder="Title" required>
+        <textarea name="description" placeholder="Description" required></textarea>
+        <textarea name="category" placeholder="Category" required></textarea>
+        <input type="number" name="price" placeholder="Price" required>
+        <input type="number" name="quantity" placeholder="Quantity" required> <!-- Add this line -->
+        <input type="file" name="image" accept="image/*" required>
+        <button type="submit">Submit</button>
+    </form>
+</div>
 
-        <div class="tab-content" id="view-products">
+
+<div class="tab-content" id="view-products">
     <h2>Available Products</h2>
     <table>
         <thead>
@@ -150,6 +154,7 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
                 <th>Title</th>
                 <th>Description</th>
                 <th>Price</th>
+                <th>Quantity</th> <!-- Add Quantity column -->
                 <th>Actions</th>
             </tr>
         </thead>
@@ -161,7 +166,7 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
                 die("Connection failed: " . mysqli_connect_error());
             }
 
-            $sql = "SELECT id, title, description, price FROM products";
+            $sql = "SELECT id, title, description, price, quantity FROM products"; // Include quantity
             $result = $conn->query($sql);
 
             if ($result->num_rows > 0) {
@@ -171,8 +176,9 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
                         <td>{$row['title']}</td>
                         <td>{$row['description']}</td>
                         <td>{$row['price']}</td>
+                        <td>{$row['quantity']}</td> <!-- Show quantity -->
                         <td>
-                            <button onclick=\"openProductEditForm({$row['id']}, '{$row['title']}', '{$row['description']}', '{$row['price']}')\">Edit</button>
+                            <button onclick=\"openProductEditForm({$row['id']}, '{$row['title']}', '{$row['description']}', '{$row['price']}', '{$row['quantity']}')\">Edit</button>
                             <form action='delete_product.php' method='post' style='display:inline;'>
                                 <input type='hidden' name='id' value='{$row['id']}'>
                                 <button type='submit' onclick=\"return confirm('Are you sure?')\">Delete</button>
@@ -181,28 +187,13 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
                     </tr>";
                 }
             } else {
-                echo "<tr><td colspan='5'>No products found</td></tr>";
+                echo "<tr><td colspan='6'>No products found</td></tr>";
             }
 
             $conn->close();
             ?>
         </tbody>
     </table>
-
-    <div id="editProductForm" style="display:none; background: #f4f4f9; padding: 20px; border-radius: 8px; margin-top: 20px;">
-        <h3>Edit Product</h3>
-        <form action="update_product.php" method="post">
-            <input type="hidden" name="id" id="productId">
-            <label for="productTitle">Title:</label>
-            <input type="text" name="title" id="productTitle" required>
-            <label for="productDescription">Description:</label>
-            <textarea name="description" id="productDescription" required></textarea>
-            <label for="productPrice">Price:</label>
-            <input type="number" name="price" id="productPrice" required>
-            <button type="submit">Update</button>
-            <button type="button" onclick="closeProductEditForm()">Cancel</button>
-        </form>
-    </div>
 </div>
 
 
@@ -251,61 +242,115 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
                     ?>
                 </tbody>
             </table>
+        </div>
 
-            <div id="editForm">
-                <h3>Edit User</h3>
-                <form action="update_user.php" method="post">
-                    <input type="hidden" name="id" id="userId">
-                    <label for="username">Username:</label>
-                    <input type="text" name="username" id="username" required>
-                    <label for="email">Email:</label>
-                    <input type="email" name="email" id="email" required>
-                    <button type="submit">Update</button>
-                    <button type="button" onclick="closeEditForm()">Cancel</button>
-                </form>
-            </div>
+        <div class="tab-content" id="view-orders">
+            <h2>View Orders</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Product</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                        <th>Total Price</th>
+                        <th>Order Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                    $conn = mysqli_connect("localhost", "root", "", "registration");
+
+                    if (!$conn) {
+                        die("Connection failed: " . mysqli_connect_error());
+                    }
+
+                    // Query to join orders and order_items
+                    $sql = "SELECT o.id as order_id, o.username, o.email, oi.product_name, oi.quantity, oi.price, o.total_price, o.status
+                            FROM orders o
+                            JOIN order_items oi ON o.id = oi.order_id";
+
+                    $result = $conn->query($sql);
+
+                    // Check if the query is successful
+                    if ($result) {
+                        if ($result->num_rows > 0) {
+                            while ($row = $result->fetch_assoc()) {
+                                echo "<tr>
+                                        <td>{$row['order_id']}</td>
+                                        <td>{$row['username']}</td>
+                                        <td>{$row['email']}</td>
+                                        <td>{$row['product_name']}</td>
+                                        <td>{$row['quantity']}</td>
+                                        <td>{$row['price']}</td>
+                                        <td>{$row['total_price']}</td>
+                                        <td>{$row['status']}</td>
+                                        <td>
+                                            <form action='update_order_status.php' method='post'>
+                                                <input type='hidden' name='order_id' value='{$row['order_id']}'>
+                                                <select name='status'>
+                                                    <option value='Pending' " . ($row['status'] == 'Pending' ? 'selected' : '') . ">Pending</option>
+                                                    <option value='Completed' " . ($row['status'] == 'Completed' ? 'selected' : '') . ">Completed</option>
+                                                    <option value='Cancelled' " . ($row['status'] == 'Cancelled' ? 'selected' : '') . ">Cancelled</option>
+                                                </select>
+                                                <button type='submit'>Update Status</button>
+                                            </form>
+                                        </td>
+                                    </tr>";
+                            }
+                        } else {
+                            echo "<tr><td colspan='9'>No orders found</td></tr>";
+                        }
+                    } else {
+                        echo "<tr><td colspan='9'>Error fetching orders: " . $conn->error . "</td></tr>";
+                    }
+
+                    $conn->close();
+                    ?>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="editForm">
+            <h2>Edit Product</h2>
+            <form action="edit_product.php" method="post">
+                <input type="hidden" name="id" id="edit-product-id">
+                <input type="text" name="title" id="edit-title" required>
+                <textarea name="description" id="edit-description" required></textarea>
+                <input type="number" name="price" id="edit-price" required>
+                <button type="submit">Update Product</button>
+            </form>
         </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const tabs = document.querySelectorAll('.tab');
-            const tabContents = document.querySelectorAll('.tab-content');
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
 
-            tabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    tabs.forEach(t => t.classList.remove('active'));
-                    tabContents.forEach(content => content.classList.remove('active'));
-
-                    tab.classList.add('active');
-                    document.querySelector(tab.dataset.target).classList.add('active');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelector('.tab.active').classList.remove('active');
+                tab.classList.add('active');
+                const target = tab.getAttribute('data-target');
+                tabContents.forEach(content => {
+                    content.classList.remove('active');
+                    if (content.id === target.substring(1)) {
+                        content.classList.add('active');
+                    }
                 });
             });
         });
 
-        function openEditForm(id, username, email) {
-            document.getElementById('editForm').style.display = 'block';
-            document.getElementById('userId').value = id;
-            document.getElementById('username').value = username;
-            document.getElementById('email').value = email;
-        }
-
-        function closeEditForm() {
-            document.getElementById('editForm').style.display = 'none';
-        }
-        
         function openProductEditForm(id, title, description, price) {
-    document.getElementById('editProductForm').style.display = 'block';
-    document.getElementById('productId').value = id;
-    document.getElementById('productTitle').value = title;
-    document.getElementById('productDescription').value = description;
-    document.getElementById('productPrice').value = price;
-}
-
-function closeProductEditForm() {
-    document.getElementById('editProductForm').style.display = 'none';
-}
-
+            document.getElementById('edit-product-id').value = id;
+            document.getElementById('edit-title').value = title;
+            document.getElementById('edit-description').value = description;
+            document.getElementById('edit-price').value = price;
+            document.getElementById('editForm').style.display = 'block';
+        }
     </script>
 </body>
 </html>

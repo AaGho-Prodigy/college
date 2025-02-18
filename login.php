@@ -21,14 +21,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($result->num_rows > 0) {
         $user = $result->fetch_assoc();
 
-        // Compare the plain-text password directly (you might consider using password hashing in a real scenario)
         if ($password === $user['password']) {
-            // Set session variables
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
-            $_SESSION['user_role'] = $user['role'];  // Store user role (e.g., 'admin' or 'user')
-
-            // Redirect to homepage or admin panel based on the role
+            $_SESSION['user_role'] = $user['role'];  
             if ($_SESSION['user_role'] === 'admin') {
                 header("Location: admin.php");  // Redirect to admin panel if admin
             } else {

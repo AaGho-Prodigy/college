@@ -77,7 +77,17 @@
     </style>
 </head>
 <body>
+
 <?php include 'header.php'; ?>
+<?php
+session_start();
+
+if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'user') {
+    // Redirect non-admin users to the homepage
+    header("Location: index.php");
+    exit();
+
+}?>
 
 <div class="cart-container">
     <h2>Your Cart</h2>
@@ -89,7 +99,7 @@
     </div>
     <div class="cart-actions">
         <button class="clear-cart" id="clear-cart">Clear Cart</button>
-        <button class="checkout" id="checkout">Checkout</button>
+        <button class="checkout" id="checkout" >Checkout</button>
     </div>
 </div>
 
@@ -176,8 +186,7 @@
             }
 
             // Placeholder: You can send `cart` to the server for further processing
-            alert("Proceeding to checkout...");
-        });
+("Location: checkout.php")        });
 
         // Initial render
         renderCart();

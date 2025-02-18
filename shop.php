@@ -77,33 +77,45 @@ if (!$conn) {
     die("Connection failed: " . mysqli_connect_error());
 }
 
-// Fetch all products from the database
-$sql = "SELECT id, title, description, price, image_url FROM products";
-$result = $conn->query($sql);
+// Fetch all categories
+$categoryQuery = "SELECT DISTINCT category FROM products";
+$categoryResult = $conn->query($categoryQuery);
 ?>
+
+<div style="padding: 20px;">
+    <input type="text" id="searchInput" placeholder="Search products..." onkeyup="filterProducts()" style="padding: 10px; width: 250px;">
+    <select id="categoryFilter" onchange="filterProducts()" style="padding: 10px; margin-left: 10px;">
+        <option value="">All Categories</option>
+        <?php while ($catRow = $categoryResult->fetch_assoc()) { ?>
+            <option value="<?php echo htmlspecialchars($catRow['category']); ?>">
+                <?php echo htmlspecialchars($catRow['category']); ?>
+            </option>
+        <?php } ?>
+    </select>
+</div>
 
 <div class="container">
     <?php
-    // Check if the query returned any products
+    // Fetch all products
+    $sql = "SELECT id, title, description, price, image_url, category, quantity FROM products";
+    $result = $conn->query($sql);
+    
     if ($result->num_rows > 0) {
-        // Loop through each product and create a product card
         while ($row = $result->fetch_assoc()) {
-            echo '<div class="product-card">';
+            echo '<div class="product-card" data-category="' . htmlspecialchars($row["category"]) . '">';
             echo '<img src="' . htmlspecialchars($row["image_url"]) . '" alt="' . htmlspecialchars($row["title"]) . '">';
             echo '<h3>' . htmlspecialchars($row["title"]) . '</h3>';
             echo '<p>' . htmlspecialchars($row["description"]) . '</p>';
+            echo '<p class="category">' . htmlspecialchars($row["category"]) . '</p>';
+            echo '<p>Stock: ' . htmlspecialchars($row["quantity"]) . '</p>';
             echo '<div class="price">$' . number_format($row["price"], 2) . '</div>';
-            echo '<button class="add-to-cart" 
-                data-id="' . htmlspecialchars($row["id"]) . '" 
-                data-title="' . htmlspecialchars($row["title"]) . '" 
-                data-price="' . htmlspecialchars($row["price"]) . '">Add to Cart</button>';
+            echo '<button class="add-to-cart" data-id="' . htmlspecialchars($row["id"]) . '" data-title="' . htmlspecialchars($row["title"]) . '" data-price="' . htmlspecialchars($row["price"]) . '">Add to Cart</button>';
             echo '</div>';
         }
     } else {
         echo '<p>No products available.</p>';
     }
-
-    // Close the database connection
+    
     $conn->close();
     ?>
 </div>
@@ -111,36 +123,21 @@ $result = $conn->query($sql);
 <?php include 'footer.php'; ?>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-    const cart = JSON.parse(localStorage.getItem("cart")) || [];
+function filterProducts() {
+    const searchValue = document.getElementById("searchInput").value.toLowerCase();
+    const selectedCategory = document.getElementById("categoryFilter").value;
+    
+    document.querySelectorAll(".product-card").forEach((card) => {
+        const title = card.querySelector("h3").textContent.toLowerCase();
+        const description = card.querySelector("p").textContent.toLowerCase();
+        const category = card.dataset.category;
 
-    // Add event listeners to "Add to Cart" buttons
-    document.querySelectorAll(".add-to-cart").forEach((button) => {
-        button.addEventListener("click", (e) => {
-            const productId = e.target.dataset.id;
-            const productTitle = e.target.dataset.title;
-            const productPrice = parseFloat(e.target.dataset.price);
+        const matchesSearch = title.includes(searchValue) || description.includes(searchValue);
+        const matchesCategory = selectedCategory === "" || category === selectedCategory;
 
-            // Check if the product is already in the cart
-            const existingProduct = cart.find((item) => item.id === productId);
-            if (existingProduct) {
-                existingProduct.quantity += 1; // Increment quantity
-            } else {
-                cart.push({
-                    id: productId,
-                    title: productTitle,
-                    price: productPrice,
-                    quantity: 1,
-                });
-            }
-
-            // Save updated cart to localStorage
-            localStorage.setItem("cart", JSON.stringify(cart));
-
-            alert(`${productTitle} has been added to your cart!`);
-        });
+        card.style.display = matchesSearch && matchesCategory ? "block" : "none";
     });
-});
+}
 </script>
 </body>
 </html>
