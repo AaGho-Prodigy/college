@@ -109,7 +109,8 @@
             margin-top: 20px;
         }
     </style>
-</head>
+    <link rel="stylesheet" href="header.css">
+    </head>
 <?php
 
 session_start();
@@ -244,75 +245,91 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
             </table>
         </div>
 
-        <div class="tab-content" id="view-orders">
-            <h2>View Orders</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Order ID</th>
-                        <th>Username</th>
-                        <th>Email</th>
-                        <th>Product</th>
-                        <th>Quantity</th>
-                        <th>Price</th>
-                        <th>Total Price</th>
-                        <th>Order Status</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    $conn = mysqli_connect("localhost", "root", "", "registration");
+       <!-- View Orders Tab -->
+       <div class="tab-content" id="view-orders">
+    <h2>View Orders</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Total Price</th>
+                <th>Order Status</th>
+                <th>User Confirmed</th>
+                <th>Admin Confirmed</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php
+            $conn = mysqli_connect("localhost", "root", "", "registration");
 
-                    if (!$conn) {
-                        die("Connection failed: " . mysqli_connect_error());
+            if (!$conn) {
+                die("Connection failed: " . mysqli_connect_error());
+            }
+
+            $sql = "SELECT o.id AS order_id, 
+                        u.username, 
+                        u.email, 
+                        oi.product_id, 
+                        oi.quantity, 
+                        o.total_price, 
+                        o.status, 
+                        o.payment_status, 
+                        o.created_at,
+                        o.user_confirmed_at,
+                        o.admin_confirmed_at,
+                        p.title AS product_name,   
+                        p.price
+                    FROM orders o
+                    JOIN order_items oi ON o.id = oi.order_id
+                    JOIN users u ON o.user_id = u.id
+                    JOIN products p ON oi.product_id = p.id";
+
+            $result = $conn->query($sql);
+
+            if ($result) {
+                if ($result->num_rows > 0) {
+                    while ($row = $result->fetch_assoc()) {
+                        echo "<tr>
+                                <td>{$row['order_id']}</td>
+                                <td>{$row['username']}</td>
+                                <td>{$row['email']}</td>
+                                <td>{$row['product_name']}</td>
+                                <td>{$row['quantity']}</td>
+                                <td>{$row['price']}</td>
+                                <td>{$row['total_price']}</td>
+                                <td>{$row['status']}</td>
+                                <td>" . ($row['user_confirmed_at'] ? 'Yes' : 'No') . "</td>
+                                <td>" . ($row['admin_confirmed_at'] ? 'Yes' : 'No') . "</td>
+                                <td>
+                                    <form action='admin_confirm_delivery.php' method='post' style='display:inline;'>
+                                        <input type='hidden' name='order_id' value='{$row['order_id']}'>
+                                        <button type='submit' " . ($row['status'] !== 'User_Confirmed' ? 'disabled' : '') . ">Confirm Delivery</button>
+                                    </form>
+                                </td>
+                            </tr>";
                     }
+                } else {
+                    echo "<tr><td colspan='11'>No orders found</td></tr>";
+                }
+            } else {
+                echo "<tr><td colspan='11'>Error fetching orders: " . $conn->error . "</td></tr>";
+            }
 
-                    // Query to join orders and order_items
-                    $sql = "SELECT o.id as order_id, o.username, o.email, oi.product_name, oi.quantity, oi.price, o.total_price, o.status
-                            FROM orders o
-                            JOIN order_items oi ON o.id = oi.order_id";
+            $conn->close();
+            ?>
+        </tbody>
+    </table>
+</div>
 
-                    $result = $conn->query($sql);
-
-                    // Check if the query is successful
-                    if ($result) {
-                        if ($result->num_rows > 0) {
-                            while ($row = $result->fetch_assoc()) {
-                                echo "<tr>
-                                        <td>{$row['order_id']}</td>
-                                        <td>{$row['username']}</td>
-                                        <td>{$row['email']}</td>
-                                        <td>{$row['product_name']}</td>
-                                        <td>{$row['quantity']}</td>
-                                        <td>{$row['price']}</td>
-                                        <td>{$row['total_price']}</td>
-                                        <td>{$row['status']}</td>
-                                        <td>
-                                            <form action='update_order_status.php' method='post'>
-                                                <input type='hidden' name='order_id' value='{$row['order_id']}'>
-                                                <select name='status'>
-                                                    <option value='Pending' " . ($row['status'] == 'Pending' ? 'selected' : '') . ">Pending</option>
-                                                    <option value='Completed' " . ($row['status'] == 'Completed' ? 'selected' : '') . ">Completed</option>
-                                                    <option value='Cancelled' " . ($row['status'] == 'Cancelled' ? 'selected' : '') . ">Cancelled</option>
-                                                </select>
-                                                <button type='submit'>Update Status</button>
-                                            </form>
-                                        </td>
-                                    </tr>";
-                            }
-                        } else {
-                            echo "<tr><td colspan='9'>No orders found</td></tr>";
-                        }
-                    } else {
-                        echo "<tr><td colspan='9'>Error fetching orders: " . $conn->error . "</td></tr>";
-                    }
-
-                    $conn->close();
-                    ?>
-                </tbody>
-            </table>
-        </div>
+        </tbody>
+    </table>
+</div>
 
         <div id="editForm">
             <h2>Edit Product</h2>

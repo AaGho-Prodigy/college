@@ -1,69 +1,67 @@
 <?php
 session_start();
-include 'connect.php'; // Ensure this file properly connects to your database
+require 'connect.php'; // Ensure you have a file to connect to the database
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = isset($_SESSION['username']) ? $_SESSION['username'] : 'Guest';
+    if (!isset($_SESSION['user_id'])) {
+        die("Error: User not logged in.");
+    }
+
+    $user_id = $_SESSION['user_id'];
     $email = $_POST['email'];
     $address = $_POST['address'];
     $phone = $_POST['phone'];
-    $cart_data = json_decode($_POST['cart_data'], true); // Decode the cart data from JSON
+    $cart_data = json_decode($_POST['cart_data'], true);
 
-    if (!$cart_data || count($cart_data) === 0) {
-        die("Error: Cart is empty!");
-    }
-
-    // Insert order into the orders table
-    $stmt = $conn->prepare("INSERT INTO orders (username, email, address, phone, total_price, status) VALUES (?, ?, ?, ?, ?, 'Pending')");
-    if (!$stmt) {
-        die("Error preparing statement for orders: " . $conn->error);
+    if (empty($cart_data)) {
+        die("Error: Cart is empty.");
     }
 
     // Calculate total price
-    $total_price = array_sum(array_map(function($item) {
-        return $item['price'] * $item['quantity'];
-    }, $cart_data));
-
-    // Bind parameters for order insertion
-    $stmt->bind_param("ssssd", $username, $email, $address, $phone, $total_price);
-
-    // Execute the statement
-    if ($stmt->execute()) {
-        $order_id = $stmt->insert_id; // Get the last inserted order ID
-
-        // Insert each product into the purchased_products table
-        foreach ($cart_data as $item) {
-            // Insert the product into the purchased_products table
-            $stmt = $conn->prepare("INSERT INTO purchased_products (product_name, quantity, price, order_id) VALUES (?, ?, ?, ?)");
-            if (!$stmt) {
-                die("Error preparing statement for purchased_products: " . $conn->error);
-            }
-            $stmt->bind_param("sidi", $item['title'], $item['quantity'], $item['price'], $order_id);
-
-            if (!$stmt->execute()) {
-                die("Error executing statement for purchased product: " . $stmt->error);
-            }
-
-            // Remove the product from the cart table (or mark as purchased)
-            // Assuming you have a cart table where products are saved before checkout
-            $stmt = $conn->prepare("DELETE FROM cart WHERE product_name = ?"); // Adjust according to your cart table
-            if (!$stmt) {
-                die("Error preparing statement for cart deletion: " . $conn->error);
-            }
-            $stmt->bind_param("s", $item['title']); // Assuming 'title' is the unique product identifier
-
-            if (!$stmt->execute()) {
-                die("Error deleting product from cart: " . $stmt->error);
-            }
-        }
-
-        // After successful order and product insertion, you can clear the cart (optional)
-        echo "success"; // Response for JavaScript
-    } else {
-        echo "Error: " . $stmt->error;
+    $total_price = 0;
+    foreach ($cart_data as $item) {
+        $total_price += $item['price'] * $item['quantity'];
     }
 
-    $stmt->close();
-    $conn->close();
+    // Insert order
+    $conn->begin_transaction();
+    try {
+        // Insert into orders table
+        $stmt = $conn->prepare("INSERT INTO orders (user_id, total_price, status, payment_status) VALUES (?, ?, 'Pending', 'Unpaid')");
+        $stmt->bind_param("id", $user_id, $total_price);
+        $stmt->execute();
+        $order_id = $stmt->insert_id; // Get the last inserted order ID
+        $stmt->close();
+
+        // Insert order items into order_items table
+        $stmt = $conn->prepare("INSERT INTO order_items (order_id, product_id, quantity) VALUES (?, ?, ?)");
+        foreach ($cart_data as $item) {
+            $stmt->bind_param("iii", $order_id, $item['id'], $item['quantity']);
+            $stmt->execute();
+            
+            // Reduce quantity in stock
+            $updateStock = $conn->prepare("UPDATE products SET quantity = quantity - ? WHERE id = ?");
+            $updateStock->bind_param("ii", $item['quantity'], $item['id']);
+            $updateStock->execute();
+        }
+        $stmt->close();
+
+        // Clear the cart for the user
+        $stmt = $conn->prepare("DELETE FROM cart WHERE user_id = ?");
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $stmt->close();
+
+        $conn->commit();
+
+        // Redirect to order confirmation page with the order_id
+        header("Location: order_confirmation.php?order_id=" . $order_id);
+        exit(); // Ensure no further script execution after redirection
+    } catch (Exception $e) {
+        $conn->rollback();
+        die("Error processing order: " . $e->getMessage());
+    }
+} else {
+    die("Invalid request.");
 }
 ?>

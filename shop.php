@@ -1,3 +1,7 @@
+<?php
+session_start(); // Start the session to access session variables
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,64 +10,8 @@
     <title>Your Store</title>
     <link rel="stylesheet" href="homepage.css">
     <link rel="stylesheet" href="header.css">
-    <script src="cart.js" async></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-        }
-        .container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            padding: 20px;
-        }
-        .product-card {
-            background: #fff;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            width: 300px;
-            padding: 15px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s;
-        }
-        .product-card:hover {
-            transform: scale(1.05);
-        }
-        .product-card img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 5px;
-        }
-        .product-card h3 {
-            margin: 10px 0;
-            font-size: 18px;
-        }
-        .product-card p {
-            font-size: 14px;
-            color: #555;
-            margin: 10px 0;
-        }
-        .product-card .price {
-            font-size: 16px;
-            font-weight: bold;
-            color: #333;
-        }
-        .product-card button {
-            margin-top: 10px;
-            padding: 10px 15px;
-            background-color: #28a745;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .product-card button:hover {
-            background-color: #218838;
-        }
-    </style>
+    <link rel="stylesheet" href="shop.css">
+    <script src="cart.js"></script>
 </head>
 <body>
 <?php include 'header.php'; ?>
@@ -94,7 +42,7 @@ $categoryResult = $conn->query($categoryQuery);
     </select>
 </div>
 
-<div class="container">
+<div class="product-container">
     <?php
     // Fetch all products
     $sql = "SELECT id, title, description, price, image_url, category, quantity FROM products";
@@ -123,6 +71,7 @@ $categoryResult = $conn->query($categoryQuery);
 <?php include 'footer.php'; ?>
 
 <script>
+// Function to filter products based on search and category selection
 function filterProducts() {
     const searchValue = document.getElementById("searchInput").value.toLowerCase();
     const selectedCategory = document.getElementById("categoryFilter").value;
@@ -138,6 +87,42 @@ function filterProducts() {
         card.style.display = matchesSearch && matchesCategory ? "block" : "none";
     });
 }
+
+// Function to handle adding items to the cart
+document.addEventListener("DOMContentLoaded", () => {
+    const addToCartButtons = document.querySelectorAll(".add-to-cart");
+
+    addToCartButtons.forEach(button => {
+        button.addEventListener("click", () => {
+            const productId = button.getAttribute("data-id");
+            const productTitle = button.getAttribute("data-title");
+            const productPrice = parseFloat(button.getAttribute("data-price"));
+
+            let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+            // Check if product already exists in the cart
+            const existingProductIndex = cart.findIndex(item => item.id === productId);
+            if (existingProductIndex !== -1) {
+                // Increase quantity if product already in cart
+                cart[existingProductIndex].quantity += 1;
+            } else {
+                // Add new product to cart
+                cart.push({
+                    id: productId,
+                    title: productTitle,
+                    price: productPrice,
+                    quantity: 1
+                });
+            }
+
+            // Save cart to localStorage
+            localStorage.setItem("cart", JSON.stringify(cart));
+
+            alert(`${productTitle} has been added to your cart!`);
+        });
+    });
+});
 </script>
+
 </body>
 </html>

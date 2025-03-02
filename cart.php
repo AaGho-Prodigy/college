@@ -1,3 +1,14 @@
+<?php
+session_start();
+
+if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'user') {
+    // Redirect non-admin users to the homepage
+    header("Location: index.php");
+    exit();
+}
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -79,15 +90,6 @@
 <body>
 
 <?php include 'header.php'; ?>
-<?php
-session_start();
-
-if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'user') {
-    // Redirect non-admin users to the homepage
-    header("Location: index.php");
-    exit();
-
-}?>
 
 <div class="cart-container">
     <h2>Your Cart</h2>
@@ -99,9 +101,12 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'user') {
     </div>
     <div class="cart-actions">
         <button class="clear-cart" id="clear-cart">Clear Cart</button>
-        <button class="checkout" id="checkout" >Checkout</button>
+        <a href="checkout.php">
+            <button class="checkout" id="checkout">Checkout</button>
+        </a>
     </div>
 </div>
+<a href="order_confirmation.php">My Orders</a>
 
 <?php include 'footer.php'; ?>
 <script>
@@ -110,6 +115,7 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'user') {
         const cartItemsContainer = document.getElementById("cart-items");
         const cartTotalElement = document.getElementById("cart-total");
         const clearCartButton = document.getElementById("clear-cart");
+        const checkoutButton = document.getElementById("checkout");
 
         // Render cart items
         function renderCart() {
@@ -119,6 +125,7 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'user') {
             if (cart.length === 0) {
                 cartItemsContainer.innerHTML = "<p>Your cart is empty.</p>";
                 cartTotalElement.textContent = "Total: $0.00";
+                checkoutButton.disabled = true;  // Disable checkout if cart is empty
                 return;
             }
 
@@ -142,6 +149,7 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'user') {
             });
 
             cartTotalElement.textContent = `Total: $${total.toFixed(2)}`;
+            checkoutButton.disabled = false;  // Enable checkout if cart has items
         }
 
         // Update cart quantity
@@ -178,15 +186,16 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'user') {
             renderCart();
         });
 
-        // Checkout button (redirect to a new page or handle checkout)
-        document.getElementById("checkout").addEventListener("click", () => {
+        // Checkout button logic
+        checkoutButton.addEventListener("click", () => {
             if (cart.length === 0) {
                 alert("Your cart is empty.");
                 return;
             }
 
-            // Placeholder: You can send `cart` to the server for further processing
-("Location: checkout.php")        });
+            // Redirect to checkout page with cart data (for example)
+            window.location.href = "checkout.php";  // Placeholder for actual checkout logic
+        });
 
         // Initial render
         renderCart();

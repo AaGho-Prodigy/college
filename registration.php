@@ -29,6 +29,7 @@
     </div>
     <div class="input-group">
       <button type="submit" name="register">Register</button>
+      <a href="login.php">
     </div>
   </form>
 </body>

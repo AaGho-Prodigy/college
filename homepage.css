@@ -175,3 +175,14 @@ body {
     margin-top: 10px;
     font-size: 14px;
 }
+
+.hero {
+    background-image:  url(hero-image-college.jpg);
+background-size: cover;  
+height: 50vh;  
+background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+    background-attachment: scroll;
+  
+}

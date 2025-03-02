@@ -1,3 +1,7 @@
+<?php
+session_start();
+$username = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username']) : '';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -78,10 +82,7 @@
     </style>
 </head>
 <body>
-<?php
-session_start();
-$username = isset($_SESSION['username']) ? $_SESSION['username'] : '';
-?>
+
 
 <div class="checkout-container">
     <h1>Checkout</h1>
@@ -148,6 +149,11 @@ $username = isset($_SESSION['username']) ? $_SESSION['username'] : '';
             cartTotalElement.textContent = `Total: $${total.toFixed(2)}`;
             cartDataInput.value = JSON.stringify(cart);
         }
+
+        document.getElementById("checkout-form").addEventListener("submit", function () {
+            localStorage.removeItem("cart"); // Clear cart after placing order
+        });
+
         renderCart();
     });
 </script>
