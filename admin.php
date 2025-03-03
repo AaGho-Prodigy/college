@@ -109,7 +109,6 @@
             margin-top: 20px;
         }
     </style>
-    <link rel="stylesheet" href="header.css">
     </head>
 <?php
 
@@ -265,65 +264,68 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
             </tr>
         </thead>
         <tbody>
-            <?php
-            $conn = mysqli_connect("localhost", "root", "", "registration");
+<?php
+$conn = mysqli_connect("localhost", "root", "", "registration");
 
-            if (!$conn) {
-                die("Connection failed: " . mysqli_connect_error());
-            }
+if (!$conn) {
+    die("Connection failed: " . mysqli_connect_error());
+}
 
-            $sql = "SELECT o.id AS order_id, 
-                        u.username, 
-                        u.email, 
-                        oi.product_id, 
-                        oi.quantity, 
-                        o.total_price, 
-                        o.status, 
-                        o.payment_status, 
-                        o.created_at,
-                        o.user_confirmed_at,
-                        o.admin_confirmed_at,
-                        p.title AS product_name,   
-                        p.price
-                    FROM orders o
-                    JOIN order_items oi ON o.id = oi.order_id
-                    JOIN users u ON o.user_id = u.id
-                    JOIN products p ON oi.product_id = p.id";
+$sql = "SELECT o.id AS order_id, 
+                u.username, 
+                u.email, 
+                oi.product_id, 
+                oi.quantity, 
+                o.total_price, 
+                o.status, 
+                o.payment_status, 
+                o.created_at,
+                o.user_confirmed_at,
+                o.admin_confirmed_at,
+                p.title AS product_name,   
+                p.price
+        FROM orders o
+        JOIN order_items oi ON o.id = oi.order_id
+        JOIN users u ON o.user_id = u.id
+        JOIN products p ON oi.product_id = p.id";
 
-            $result = $conn->query($sql);
+$result = $conn->query($sql);
 
-            if ($result) {
-                if ($result->num_rows > 0) {
-                    while ($row = $result->fetch_assoc()) {
-                        echo "<tr>
-                                <td>{$row['order_id']}</td>
-                                <td>{$row['username']}</td>
-                                <td>{$row['email']}</td>
-                                <td>{$row['product_name']}</td>
-                                <td>{$row['quantity']}</td>
-                                <td>{$row['price']}</td>
-                                <td>{$row['total_price']}</td>
-                                <td>{$row['status']}</td>
-                                <td>" . ($row['user_confirmed_at'] ? 'Yes' : 'No') . "</td>
-                                <td>" . ($row['admin_confirmed_at'] ? 'Yes' : 'No') . "</td>
-                                <td>
-                                    <form action='admin_confirm_delivery.php' method='post' style='display:inline;'>
-                                        <input type='hidden' name='order_id' value='{$row['order_id']}'>
-                                        <button type='submit' " . ($row['status'] !== 'User_Confirmed' ? 'disabled' : '') . ">Confirm Delivery</button>
-                                    </form>
-                                </td>
-                            </tr>";
-                    }
-                } else {
-                    echo "<tr><td colspan='11'>No orders found</td></tr>";
-                }
-            } else {
-                echo "<tr><td colspan='11'>Error fetching orders: " . $conn->error . "</td></tr>";
-            }
+if ($result) {
+    if ($result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            echo "<tr>
+                    <td>{$row['order_id']}</td>
+                    <td>{$row['username']}</td>
+                    <td>{$row['email']}</td>
+                    <td>{$row['product_name']}</td>
+                    <td>{$row['quantity']}</td>
+                    <td>{$row['price']}</td>
+                    <td>{$row['total_price']}</td>
+                    <td>{$row['status']}</td>
+                    <td>" . ($row['user_confirmed_at'] ? 'Yes' : 'No') . "</td>
+                    <td>" . ($row['admin_confirmed_at'] ? 'Yes' : 'No') . "</td>
+                    <td>
+                        <form action='process_mark_paid.php' method='POST'>
+                            <input type='hidden' name='order_id' value='{$row['order_id']}'>
+                            <button type='submit' " . ($row['payment_status'] === 'paid' ? 'disabled' : '') . ">
+                                Mark as Paid
+                            </button>
+                        </form>
+                    </td>
+                </tr>";
+        }
+    } else {
+        echo "<tr><td colspan='11'>No orders found</td></tr>";
+    }
+} else {
+    echo "<tr><td colspan='11'>Error fetching orders: " . $conn->error . "</td></tr>";
+}
 
-            $conn->close();
-            ?>
-        </tbody>
+$conn->close();
+?>
+</tbody>
+
     </table>
 </div>
 
