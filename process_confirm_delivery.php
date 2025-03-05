@@ -7,22 +7,30 @@ if (!$conn) {
 }
 
 if (!isset($_SESSION['user_id']) || !isset($_POST['order_id'])) {
-    die("Unauthorized access.");
+    header("Location: login.php");
+    exit();
 }
 
 $order_id = $_POST['order_id'];
 $user_id = $_SESSION['user_id'];
 
-$sql = "UPDATE orders SET status = 'delivered', user_confirmed_at = NOW() 
-        WHERE id = '$order_id' AND user_id = '$user_id'";
+// Update both status AND is_confirmed
+$sql = "UPDATE orders 
+        SET status = 'delivered', 
+            is_confirmed = 1,          // Add this line
+            user_confirmed_at = NOW() 
+        WHERE id = ? AND user_id = ?";
 
-if (mysqli_query($conn, $sql)) {
+$stmt = mysqli_prepare($conn, $sql);
+mysqli_stmt_bind_param($stmt, 'ii', $order_id, $user_id);
+
+if (mysqli_stmt_execute($stmt)) {
     header("Location: confirm_delivery.php?success=1");
-    exit();
 } else {
-    header("Location: confirm_delivery.php?error=1");
-    exit();
+    header("Location: confirm_delivery.php?error=" . urlencode(mysqli_error($conn)));
 }
 
+mysqli_stmt_close($stmt);
 mysqli_close($conn);
+exit();
 ?>

@@ -11,48 +11,54 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $user_id = $_SESSION['user_id'];
-$cart_query = "SELECT c.product_id, c.quantity, p.price 
-               FROM cart c
-               JOIN products p ON c.product_id = p.id
-               WHERE c.user_id = '$user_id'";
 
-$cart_result = mysqli_query($conn, $cart_query);
+if (!isset($_POST['cart_data'])) {
+    die("No cart data received.");
+}
 
-if (!$cart_result || mysqli_num_rows($cart_result) == 0) {
+$cart_data = json_decode($_POST['cart_data'], true);
+if (!$cart_data || count($cart_data) === 0) {
     die("Cart is empty.");
 }
 
+// Calculate total price
 $total_price = 0;
-$order_items = [];
-
-while ($row = mysqli_fetch_assoc($cart_result)) {
-    $order_items[] = $row;
-    $total_price += $row['price'] * $row['quantity'];
+foreach ($cart_data as $item) {
+    $total_price += $item['price'] * $item['quantity'];
 }
 
-// Insert into orders
+// Insert order with explicit status
 $order_query = "INSERT INTO orders (user_id, total_price, status, payment_status, created_at)
-                VALUES ('$user_id', '$total_price', 'pending', 'unpaid', NOW())";
+                VALUES (?, ?, 'pending', 'unpaid', NOW())"; // Explicit status/payment_status
 
-if (mysqli_query($conn, $order_query)) {
+$stmt = mysqli_prepare($conn, $order_query);
+mysqli_stmt_bind_param($stmt, 'id', $user_id, $total_price);
+
+if (mysqli_stmt_execute($stmt)) {
     $order_id = mysqli_insert_id($conn);
 
     // Insert order items
-    foreach ($order_items as $item) {
-        $product_id = $item['product_id'];
-        $quantity = $item['quantity'];
-        mysqli_query($conn, "INSERT INTO order_items (order_id, product_id, quantity) 
-                             VALUES ('$order_id', '$product_id', '$quantity')");
+    $order_item_query = "INSERT INTO order_items (order_id, product_id, quantity) 
+                         VALUES (?, ?, ?)";
+    $stmt_items = mysqli_prepare($conn, $order_item_query);
+
+    foreach ($cart_data as $item) {
+        mysqli_stmt_bind_param($stmt_items, 'iii', $order_id, $item['id'], $item['quantity']);
+        if (!mysqli_stmt_execute($stmt_items)) {
+            die("Error inserting order item: " . mysqli_error($conn));
+        }
+
+        // Update product quantity
+        $update_quantity_query = "UPDATE products SET quantity = quantity - ? WHERE id = ?";
+        $stmt_update = mysqli_prepare($conn, $update_quantity_query);
+        mysqli_stmt_bind_param($stmt_update, 'ii', $item['quantity'], $item['id']);
+        mysqli_stmt_execute($stmt_update);
     }
 
-    // Clear cart
-    mysqli_query($conn, "DELETE FROM cart WHERE user_id = '$user_id'");
-
-    // Redirect to order confirmation page
     header("Location: order_confirmation.php?order_id=$order_id");
     exit();
 } else {
-    echo "Error: " . mysqli_error($conn);
+    die("Order creation failed: " . mysqli_error($conn)); // Detailed error
 }
 
 mysqli_close($conn);

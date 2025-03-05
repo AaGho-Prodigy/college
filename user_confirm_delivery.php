@@ -7,13 +7,23 @@ if (!$conn) {
 }
 
 if (!isset($_SESSION['user_id'])) {
-    die("User not logged in.");
+    header("Location: login.php"); // Redirect to login instead of dying
+    exit();
 }
 
 $user_id = $_SESSION['user_id'];
 
-$sql = "SELECT * FROM orders WHERE user_id = '$user_id' AND status = 'pending'";
-$result = mysqli_query($conn, $sql);
+// Use prepared statement to prevent SQL injection
+$sql = "SELECT * FROM orders WHERE user_id = ? AND status = 'pending'";
+$stmt = mysqli_prepare($conn, $sql);
+mysqli_stmt_bind_param($stmt, 'i', $user_id);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
+
+// Error handling for query failure
+if (!$result) {
+    die("Query failed: " . mysqli_error($conn));
+}
 ?>
 
 <!DOCTYPE html>
@@ -38,12 +48,12 @@ $result = mysqli_query($conn, $sql);
         </tr>
         <?php while ($row = mysqli_fetch_assoc($result)): ?>
             <tr>
-                <td><?= $row['id'] ?></td>
-                <td>$<?= $row['total_price'] ?></td>
-                <td><?= ucfirst($row['status']) ?></td>
+                <td><?= htmlspecialchars($row['id']) ?></td>
+                <td>$<?= number_format($row['total_price'], 2) ?></td>
+                <td><?= ucfirst(htmlspecialchars($row['status'])) ?></td>
                 <td>
                     <form action="process_confirm_delivery.php" method="POST">
-                        <input type="hidden" name="order_id" value="<?= $row['id'] ?>">
+                        <input type="hidden" name="order_id" value="<?= htmlspecialchars($row['id']) ?>">
                         <button type="submit">Confirm Delivery</button>
                     </form>
                 </td>
@@ -57,4 +67,7 @@ $result = mysqli_query($conn, $sql);
 </body>
 </html>
 
-<?php mysqli_close($conn); ?>
+<?php
+mysqli_stmt_close($stmt);
+mysqli_close($conn);
+?>
